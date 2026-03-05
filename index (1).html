@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CV Analyzer · AI-Powered Recruitment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080808;
+    --surface: #111111;
+    --surface2: #181818;
+    --border: #222222;
+    --accent: #C8FF57;
+    --accent-dim: #8fb83d;
+    --text: #EBEBEB;
+    --muted: #666;
+    --green: #4ADE80;
+    --red: #F87171;
+    --orange: #FB923C;
+    --purple: #A78BFA;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* HEADER */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    padding: 16px 40px;
+    border-bottom: 1px solid var(--border);
+    background: #0C0C0C;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    gap: 20px;
+  }
+  .logo-row { display: flex; align-items: center; gap: 14px; }
+  .logo-icon {
+    width: 38px; height: 38px;
+    background: var(--accent);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 19px;
+  }
+  .logo-text { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+  .logo-sub { font-size: 11px; color: var(--muted); margin-top: 2px; letter-spacing: 0.05em; text-transform: uppercase; }
+  .api-row { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .api-input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 13px;
+    padding: 8px 12px;
+    width: 260px;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .api-input:focus { border-color: var(--accent); }
+  .api-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
+  .api-status { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
+  .api-status.ok { background: var(--green); }
+
+  /* LAYOUT */
+  .main { max-width: 1160px; margin: 0 auto; padding: 36px 24px; }
+  .layout { display: grid; grid-template-columns: 360px 1fr; gap: 24px; align-items: start; }
+
+  /* PANEL */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 24px;
+    position: sticky;
+    top: 90px;
+  }
+  .field { margin-bottom: 18px; }
+  .field-label {
+    display: block;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 7px;
+    font-family: 'Syne', sans-serif;
+  }
+  textarea, input[type=text] {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13.5px;
+    padding: 11px 13px;
+    resize: vertical;
+    outline: none;
+    line-height: 1.6;
+    transition: border-color 0.2s;
+  }
+  textarea:focus, input[type=text]:focus { border-color: var(--accent); }
+
+  /* UPLOAD */
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 26px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--surface2);
+    user-select: none;
+  }
+  .upload-zone:hover, .upload-zone.drag { border-color: var(--accent); background: #141a07; }
+  .upload-icon { font-size: 30px; margin-bottom: 8px; }
+  .upload-hint { font-size: 13px; color: var(--muted); }
+  .upload-hint span { color: var(--accent); }
+  .upload-count { font-size: 11px; color: #444; margin-top: 4px; }
+
+  /* FILE CHIPS */
+  .files-list { margin-top: 10px; }
+  .file-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    font-size: 12.5px;
+    transition: border-color 0.15s;
+  }
+  .file-chip:hover { border-color: #333; }
+  .file-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-remove {
+    background: none; border: none; color: #444; cursor: pointer;
+    font-size: 17px; line-height: 1; padding: 0 2px; transition: color 0.15s;
+  }
+  .file-remove:hover { color: var(--red); }
+
+  /* BUTTONS */
+  .btn-analyze {
+    width: 100%;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 11px;
+    padding: 14px;
+    font-size: 14.5px;
+    font-weight: 700;
+    font-family: 'Syne', sans-serif;
+    cursor: pointer;
+    margin-top: 14px;
+    letter-spacing: -0.2px;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .btn-analyze:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+  .btn-analyze:active:not(:disabled) { transform: translateY(0); }
+  .btn-analyze:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ERROR */
+  .error-msg { color: var(--red); font-size: 12.5px; margin-top: 8px; }
+
+  /* RESULTS */
+  .results-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .results-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  .results-sub { font-size: 12px; color: var(--muted); }
+
+  /* CANDIDATE CARD */
+  .candidate-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .candidate-card:hover { border-color: #2e2e2e; }
+  .candidate-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 24px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .cand-rank {
+    width: 34px; height: 34px;
+    background: var(--surface2);
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  .cand-info { flex: 1; min-width: 0; }
+  .cand-name { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
+  .cand-role { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .score-wrap { display: flex; align-items: center; gap: 12px; }
+  .score-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 20px;
+    padding: 4px 13px;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'Syne', sans-serif;
+    white-space: nowrap;
+  }
+  .score-badge.high { background: #0a200a; color: var(--green); border: 1px solid #1a3a1a; }
+  .score-badge.mid { background: #1e1a00; color: var(--accent); border: 1px solid #3a3000; }
+  .score-badge.low { background: #200a0a; color: var(--red); border: 1px solid #3a1a1a; }
+  .score-bar-wrap { width: 60px; height: 4px; background: #222; border-radius: 2px; overflow: hidden; }
+  .score-bar-fill { height: 100%; border-radius: 2px; background: var(--accent); transition: width 0.8s ease; }
+  .chevron { color: var(--muted); font-size: 12px; flex-shrink: 0; transition: transform 0.2s; }
+  .chevron.open { transform: rotate(180deg); }
+
+  /* CANDIDATE BODY */
+  .candidate-body { padding: 0 24px 24px; display: none; }
+  .candidate-body.open { display: block; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .inner-card {
+    background: var(--surface2);
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .inner-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-family: 'Syne', sans-serif;
+    margin-bottom: 10px;
+  }
+  .bullet-item { display: flex; gap: 8px; margin-bottom: 5px; font-size: 13px; color: #C0C0C0; line-height: 1.6; }
+  .bullet-dot { width: 5px; height: 5px; border-radius: 50%; margin-top: 7px; flex-shrink: 0; }
+
+  .company-card {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #B0B0B0;
+  }
+  .company-name-row { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--text); font-size: 14px; margin-bottom: 4px; display: flex; align-items: baseline; gap: 8px; }
+  .company-period { font-size: 11px; color: var(--muted); font-weight: 400; font-family: 'DM Sans', sans-serif; }
+
+  .summary-box {
+    margin-top: 14px;
+    padding: 14px 16px;
+    background: var(--surface2);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 10px 10px 0;
+    font-size: 13px;
+    color: #C0C0C0;
+    line-height: 1.7;
+  }
+  .summary-box strong { color: var(--text); }
+
+  /* COMPARE TABLE */
+  .compare-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 24px;
+    margin-top: 16px;
+    overflow-x: auto;
+  }
+  .compare-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 18px;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 600px; }
+  th {
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+  }
+  td {
+    padding: 12px 12px;
+    border-bottom: 1px solid #1a1a1a;
+    vertical-align: top;
+    color: #B0B0B0;
+    line-height: 1.5;
+  }
+  tr:last-child td { border-bottom: none; }
+  .verdict { font-weight: 600; font-family: 'Syne', sans-serif; font-size: 12px; }
+  .verdict.rec { color: var(--green); }
+  .verdict.con { color: var(--accent); }
+  .verdict.no { color: var(--red); }
+
+  /* EMPTY STATE */
+  .empty-state {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 70px 24px;
+    text-align: center;
+  }
+  .empty-icon { font-size: 52px; margin-bottom: 18px; }
+  .empty-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 10px; letter-spacing: -0.5px; }
+  .empty-desc { color: var(--muted); font-size: 13.5px; line-height: 1.8; }
+
+  /* SPINNER */
+  .spinner {
+    display: inline-block;
+    width: 17px; height: 17px;
+    border: 2px solid #333;
+    border-top-color: #000;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* PROGRESS */
+  .progress-msg { font-size: 12px; color: var(--muted); margin-top: 8px; text-align: center; min-height: 18px; }
+
+  /* LOADING SKELETON */
+  .skeleton-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+  .skel { background: linear-gradient(90deg, #1a1a1a 25%, #222 50%, #1a1a1a 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 6px; }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 3px; }
+
+  @media (max-width: 800px) {
+    header { padding: 16px 20px; flex-wrap: wrap; }
+    .api-row { width: 100%; }
+    .api-input { width: 100%; flex: 1; }
+    .main { padding: 20px 16px; }
+    .layout { grid-template-columns: 1fr; }
+    .panel { position: static; }
+    .two-col { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-row">
+    <div class="logo-icon">🎯</div>
+    <div>
+      <div class="logo-text">CV Analyzer</div>
+      <div class="logo-sub">AI-Powered Candidate Screening</div>
+    </div>
+  </div>
+  <div class="api-row">
+    <div class="api-label">Anthropic API Key</div>
+    <div class="api-status" id="apiStatus"></div>
+    <input class="api-input" type="password" id="apiKey" placeholder="sk-ant-..." oninput="onApiKeyInput()" />
+  </div>
+</header>
+
+<div class="main">
+  <div class="layout">
+
+    <!-- LEFT PANEL -->
+    <div class="panel">
+
+      <div class="field">
+        <span class="field-label">Job Description</span>
+        <textarea id="jobDesc" rows="7" placeholder="Paste the job description here — requirements, responsibilities, tech stack, team context..."></textarea>
+      </div>
+
+      <div class="field">
+        <span class="field-label">Expectations & Context</span>
+        <textarea id="expectations" rows="4" placeholder="What matters most to you? e.g. must have B2B SaaS experience, needs to work autonomously, Senior level only..."></textarea>
+      </div>
+
+      <div class="field">
+        <span class="field-label">Candidate CVs (PDF · up to 6 files)</span>
+        <div class="upload-zone" id="uploadZone"
+          onclick="document.getElementById('fileInput').click()"
+          ondragover="onDragOver(event)"
+          ondragleave="onDragLeave()"
+          ondrop="onDrop(event)">
+          <div class="upload-icon">📄</div>
+          <div class="upload-hint">Drop PDFs here or <span>browse files</span></div>
+          <div class="upload-count" id="uploadCount">No files selected</div>
+        </div>
+        <input type="file" id="fileInput" accept="application/pdf" multiple style="display:none" onchange="onFileInput(event)" />
+        <div class="files-list" id="filesList"></div>
+      </div>
+
+      <div id="errorMsg" class="error-msg"></div>
+
+      <button class="btn-analyze" id="analyzeBtn" onclick="handleAnalyze()" disabled>
+        Analyze Candidates
+      </button>
+      <div class="progress-msg" id="progressMsg"></div>
+
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div id="resultsArea">
+      <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <div class="empty-title">Ready to Screen</div>
+        <div class="empty-desc">
+          Add your API key, paste a job description,<br>
+          upload PDF CVs and hit <strong>Analyze</strong>.<br><br>
+          Each candidate is scored, compared,<br>and ranked automatically.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let uploadedFiles = [];
+let analysisResults = [];
+
+// ── API KEY ──────────────────────────────────────────────────
+function onApiKeyInput() {
+  const key = document.getElementById('apiKey').value.trim();
+  const status = document.getElementById('apiStatus');
+  status.className = 'api-status' + (key.startsWith('sk-ant-') ? ' ok' : '');
+  localStorage.setItem('cv_analyzer_key', key);
+  updateAnalyzeBtn();
+}
+
+window.onload = () => {
+  const saved = localStorage.getItem('cv_analyzer_key');
+  if (saved) {
+    document.getElementById('apiKey').value = saved;
+    onApiKeyInput();
+  }
+};
+
+// ── FILES ────────────────────────────────────────────────────
+function onDragOver(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.add('drag');
+}
+function onDragLeave() {
+  document.getElementById('uploadZone').classList.remove('drag');
+}
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('drag');
+  const dropped = Array.from(e.dataTransfer.files).filter(f => f.type === 'application/pdf');
+  addFiles(dropped);
+}
+function onFileInput(e) {
+  addFiles(Array.from(e.target.files));
+  e.target.value = '';
+}
+function addFiles(newFiles) {
+  uploadedFiles = [...uploadedFiles, ...newFiles].slice(0, 6);
+  renderFiles();
+}
+function removeFile(i) {
+  uploadedFiles.splice(i, 1);
+  renderFiles();
+}
+function renderFiles() {
+  const count = uploadedFiles.length;
+  document.getElementById('uploadCount').textContent = count === 0 ? 'No files selected' : `${count} file${count > 1 ? 's' : ''} selected`;
+  const list = document.getElementById('filesList');
+  list.innerHTML = uploadedFiles.map((f, i) => `
+    <div class="file-chip">
+      <span>📎</span>
+      <span class="file-name">${escHtml(f.name)}</span>
+      <button class="file-remove" onclick="removeFile(${i})">×</button>
+    </div>
+  `).join('');
+  updateAnalyzeBtn();
+}
+function updateAnalyzeBtn() {
+  const key = document.getElementById('apiKey').value.trim();
+  const hasJob = document.getElementById('jobDesc').value.trim().length > 0;
+  const btn = document.getElementById('analyzeBtn');
+  btn.disabled = !(key && uploadedFiles.length > 0 && hasJob);
+}
+document.getElementById('jobDesc').addEventListener('input', updateAnalyzeBtn);
+
+// ── READ FILE ────────────────────────────────────────────────
+function readFileAsBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = () => rej(new Error('Read failed'));
+    r.readAsDataURL(file);
+  });
+}
+
+// ── ANALYZE ──────────────────────────────────────────────────
+async function analyzeOne(file, apiKey, jobDesc, expectations) {
+  const base64 = await readFileAsBase64(file);
+  const prompt = `You are an expert recruiter and talent advisor. Analyze this candidate's CV against the job description below.
+
+JOB DESCRIPTION:
+${jobDesc}
+
+HIRING CONTEXT & EXPECTATIONS:
+${expectations || 'Not provided'}
+
+The CV is attached as a PDF.
+
+Return ONLY a valid JSON object with NO markdown fences, no preamble:
+{
+  "name": "Full name from CV",
+  "currentRole": "Current or most recent job title",
+  "matchScore": integer 0-100,
+  "strengths": ["strength 1", "strength 2", "strength 3"],
+  "weaknesses": ["weakness 1", "weakness 2"],
+  "risks": ["risk 1", "risk 2"],
+  "companies": [
+    {
+      "name": "Most recent company name",
+      "period": "employment period",
+      "analysis": "2-3 sentences: company type/size, candidate's role and achievements, reason for leaving if mentioned"
+    },
+    {
+      "name": "Second most recent company",
+      "period": "employment period",
+      "analysis": "2-3 sentences analysis"
+    }
+  ],
+  "summary": "2-3 sentence overall verdict on fit",
+  "verdict": "Recommended" or "Consider" or "Not Recommended"
+}`;
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-opus-4-6',
+      max_tokens: 1500,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64 } },
+          { type: 'text', text: prompt }
+        ]
+      }]
+    })
+  });
+
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  const text = (data.content || []).map(i => i.text || '').join('');
+  const clean = text.replace(/```json|```/g, '').trim();
+  return JSON.parse(clean);
+}
+
+async function handleAnalyze() {
+  const apiKey = document.getElementById('apiKey').value.trim();
+  const jobDesc = document.getElementById('jobDesc').value.trim();
+  const expectations = document.getElementById('expectations').value.trim();
+
+  document.getElementById('errorMsg').textContent = '';
+  document.getElementById('analyzeBtn').disabled = true;
+  document.getElementById('progressMsg').textContent = '';
+  analysisResults = [];
+
+  renderResults([], true);
+
+  for (let i = 0; i < uploadedFiles.length; i++) {
+    setProgress(`Analyzing ${i + 1} of ${uploadedFiles.length}: ${uploadedFiles[i].name}…`);
+    if (i > 0) await new Promise(r => setTimeout(r, 5000)); // 5s pause to avoid rate limit
+    try {
+      const result = await analyzeOne(uploadedFiles[i], apiKey, jobDesc, expectations);
+      analysisResults.push(result);
+    } catch (e) {
+      analysisResults.push({
+        name: uploadedFiles[i].name,
+        currentRole: '',
+        matchScore: 0,
+        strengths: [],
+        weaknesses: [],
+        risks: ['Could not parse this PDF — try a text-based PDF'],
+        companies: [],
+        summary: 'Analysis failed.',
+        verdict: 'Not Recommended'
+      });
+    }
+    renderResults(analysisResults, i < uploadedFiles.length - 1);
+  }
+
+  setProgress('');
+  document.getElementById('analyzeBtn').disabled = false;
+  updateAnalyzeBtn();
+}
+
+function setProgress(msg) {
+  document.getElementById('progressMsg').innerHTML = msg
+    ? `<span class="spinner"></span>${escHtml(msg)}`
+    : '';
+}
+
+// ── RENDER ───────────────────────────────────────────────────
+function scoreClass(s) { return s >= 75 ? 'high' : s >= 50 ? 'mid' : 'low'; }
+
+function renderResults(results, loading) {
+  const area = document.getElementById('resultsArea');
+  if (results.length === 0 && loading) {
+    area.innerHTML = `<div class="skeleton-card">
+      <div style="display:flex;gap:14px;align-items:center">
+        <div class="skel" style="width:34px;height:34px;border-radius:9px"></div>
+        <div style="flex:1">
+          <div class="skel" style="height:16px;width:55%;margin-bottom:8px"></div>
+          <div class="skel" style="height:11px;width:30%"></div>
+        </div>
+        <div class="skel" style="height:28px;width:100px;border-radius:20px"></div>
+      </div>
+    </div>`;
+    return;
+  }
+
+  let html = `<div class="results-header">
+    <span class="results-title">${results.length} Candidate${results.length !== 1 ? 's' : ''} Analyzed</span>
+    ${loading ? '<span class="results-sub">· analyzing…</span>' : ''}
+  </div>`;
+
+  results.forEach((r, i) => {
+    const score = r.matchScore || 0;
+    html += `
+    <div class="candidate-card" id="card-${i}">
+      <div class="candidate-header" onclick="toggleCard(${i})">
+        <div class="cand-rank">#${i+1}</div>
+        <div class="cand-info">
+          <div class="cand-name">${escHtml(r.name || `Candidate ${i+1}`)}</div>
+          <div class="cand-role">${escHtml(r.currentRole || '')}</div>
+        </div>
+        <div class="score-wrap">
+          <span class="score-badge ${scoreClass(score)}">${score}% match</span>
+          <div class="score-bar-wrap"><div class="score-bar-fill" style="width:${score}%"></div></div>
+        </div>
+        <span class="chevron open" id="chev-${i}">▲</span>
+      </div>
+      <div class="candidate-body open" id="body-${i}">
+        <div class="two-col">
+          <div class="inner-card">
+            <div class="inner-title" style="color:var(--green)">✦ Strengths</div>
+            ${bulletList(r.strengths, 'var(--green)')}
+          </div>
+          <div class="inner-card">
+            <div class="inner-title" style="color:var(--red)">✦ Weaknesses</div>
+            ${bulletList(r.weaknesses, 'var(--red)')}
+          </div>
+        </div>
+        <div class="inner-card" style="margin-bottom:14px">
+          <div class="inner-title" style="color:var(--orange)">⚠ Risks</div>
+          ${bulletList(r.risks, 'var(--orange)')}
+        </div>
+        <div style="margin-bottom:4px">
+          <div class="inner-title" style="color:var(--purple);margin-bottom:10px">🏢 Last Two Companies</div>
+          ${(r.companies || []).map(c => `
+            <div class="company-card">
+              <div class="company-name-row">${escHtml(c.name || '')} <span class="company-period">${escHtml(c.period || '')}</span></div>
+              ${escHtml(c.analysis || '')}
+            </div>
+          `).join('')}
+        </div>
+        ${r.summary ? `<div class="summary-box"><strong>Verdict: </strong>${escHtml(r.summary)}</div>` : ''}
+      </div>
+    </div>`;
+  });
+
+  if (results.length >= 2 && !loading) {
+    const sorted = [...results].sort((a, b) => (b.matchScore||0) - (a.matchScore||0));
+    const medals = ['🥇','🥈','🥉'];
+    html += `<div class="compare-card">
+      <div class="compare-title">📊 Comparison Rankings</div>
+      <table>
+        <thead><tr>
+          <th>Rank</th><th>Candidate</th><th>Score</th><th>Top Strengths</th><th>Key Risk</th><th>Verdict</th>
+        </tr></thead>
+        <tbody>
+          ${sorted.map((r,i) => `<tr>
+            <td style="font-size:18px">${medals[i] || '#'+(i+1)}</td>
+            <td><strong style="color:var(--text);font-family:'Syne',sans-serif">${escHtml(r.name||'')}</strong><br><span style="font-size:11px;color:var(--muted)">${escHtml(r.currentRole||'')}</span></td>
+            <td><span class="score-badge ${scoreClass(r.matchScore||0)}">${r.matchScore}%</span></td>
+            <td>${(r.strengths||[]).slice(0,2).map(s=>escHtml(s)).join('<br>')}</td>
+            <td>${escHtml((r.risks||[])[0]||'—')}</td>
+            <td><span class="verdict ${r.verdict==='Recommended'?'rec':r.verdict==='Consider'?'con':'no'}">${escHtml(r.verdict||'—')}</span></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+  }
+
+  area.innerHTML = html;
+}
+
+function toggleCard(i) {
+  const body = document.getElementById('body-' + i);
+  const chev = document.getElementById('chev-' + i);
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  chev.classList.toggle('open', !isOpen);
+}
+
+function bulletList(items, color) {
+  if (!items || items.length === 0) return '<div style="color:#444;font-size:13px">—</div>';
+  return items.map(item => `
+    <div class="bullet-item">
+      <div class="bullet-dot" style="background:${color}"></div>
+      <span>${escHtml(item)}</span>
+    </div>`).join('');
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
