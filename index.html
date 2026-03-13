@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CV Analyzer · AI-Powered Recruitment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080808;
+    --surface: #111111;
+    --surface2: #181818;
+    --border: #222222;
+    --accent: #C8FF57;
+    --accent-dim: #8fb83d;
+    --text: #EBEBEB;
+    --muted: #666;
+    --green: #4ADE80;
+    --red: #F87171;
+    --orange: #FB923C;
+    --purple: #A78BFA;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* HEADER */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    padding: 16px 40px;
+    border-bottom: 1px solid var(--border);
+    background: #0C0C0C;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    gap: 20px;
+  }
+  .logo-row { display: flex; align-items: center; gap: 14px; }
+  .logo-icon {
+    width: 38px; height: 38px;
+    background: var(--accent);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 19px;
+  }
+  .logo-text { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+  .logo-sub { font-size: 11px; color: var(--muted); margin-top: 2px; letter-spacing: 0.05em; text-transform: uppercase; }
+
+  .header-right { display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
+  .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+  .breadcrumb-back {
+    background: none; border: 1px solid var(--border); border-radius: 8px;
+    color: var(--muted); font-size: 12px; padding: 6px 12px; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; transition: all 0.15s;
+  }
+  .breadcrumb-back:hover { border-color: #444; color: var(--text); }
+  .breadcrumb-sep { color: #333; }
+  .breadcrumb-current { color: var(--text); font-weight: 500; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .api-row { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .api-input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 13px;
+    padding: 8px 12px;
+    width: 240px;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .api-input:focus { border-color: var(--accent); }
+  .api-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
+  .api-status { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
+  .api-status.ok { background: var(--green); }
+
+  /* MAIN */
+  .main { max-width: 1160px; margin: 0 auto; padding: 36px 24px; }
+
+  /* ── PROJECTS SCREEN ── */
+  #projectsScreen { display: block; }
+  #projectScreen { display: none; }
+
+  .projects-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 28px;
+  }
+  .projects-title {
+    font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; letter-spacing: -0.5px;
+  }
+  .btn-new-project {
+    background: var(--accent); color: #000; border: none; border-radius: 11px;
+    padding: 11px 22px; font-size: 14px; font-weight: 700; font-family: 'Syne', sans-serif;
+    cursor: pointer; letter-spacing: -0.2px; transition: opacity 0.2s, transform 0.1s;
+  }
+  .btn-new-project:hover { opacity: 0.9; transform: translateY(-1px); }
+
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .project-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 22px;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .project-card:hover { border-color: #333; transform: translateY(-2px); }
+  .project-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--accent); opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .project-card:hover::before { opacity: 1; }
+  .project-card-icon { font-size: 28px; margin-bottom: 14px; }
+  .project-card-title {
+    font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700;
+    letter-spacing: -0.3px; margin-bottom: 14px; line-height: 1.4;
+    color: var(--text);
+  }
+  .project-card-meta { display: flex; flex-direction: column; gap: 6px; }
+  .project-meta-row { display: flex; justify-content: space-between; align-items: center; }
+  .project-meta-key { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .project-meta-val { font-size: 12px; color: var(--text); font-weight: 500; }
+  .project-card-actions {
+    margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border);
+    display: flex; justify-content: flex-end;
+  }
+  .btn-delete-proj {
+    background: none; border: none; color: #444; font-size: 12px; cursor: pointer;
+    padding: 4px 8px; border-radius: 6px; transition: color 0.15s, background 0.15s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .btn-delete-proj:hover { color: var(--red); background: #1a0a0a; }
+
+  .project-card-new {
+    background: var(--surface);
+    border: 2px dashed var(--border);
+    border-radius: 18px;
+    padding: 22px;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.15s;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 180px; gap: 10px;
+  }
+  .project-card-new:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .project-card-new-icon { font-size: 28px; color: #333; }
+  .project-card-new-text { font-size: 13px; color: var(--muted); }
+
+  .projects-empty {
+    text-align: center; padding: 80px 24px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 18px;
+  }
+  .projects-empty-icon { font-size: 52px; margin-bottom: 18px; }
+  .projects-empty-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 10px; }
+  .projects-empty-desc { color: var(--muted); font-size: 13.5px; line-height: 1.8; margin-bottom: 24px; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+    padding: 32px; width: 480px; max-width: 90vw;
+    transform: translateY(12px); transition: transform 0.2s;
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 22px; letter-spacing: -0.5px; }
+  .modal-field { margin-bottom: 16px; }
+  .modal-label {
+    display: block; font-size: 10px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--muted); margin-bottom: 7px; font-family: 'Syne', sans-serif;
+  }
+  .modal-input, .modal-textarea {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text); font-family: 'DM Sans', sans-serif;
+    font-size: 13.5px; padding: 11px 13px; outline: none; line-height: 1.6;
+    transition: border-color 0.2s;
+  }
+  .modal-textarea { resize: vertical; }
+  .modal-input:focus, .modal-textarea:focus { border-color: var(--accent); }
+  .modal-actions { display: flex; gap: 10px; margin-top: 22px; justify-content: flex-end; }
+  .btn-modal-cancel {
+    background: none; border: 1px solid var(--border); border-radius: 10px;
+    color: var(--muted); padding: 10px 20px; font-size: 13px; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; transition: border-color 0.15s;
+  }
+  .btn-modal-cancel:hover { border-color: #444; }
+  .btn-modal-create {
+    background: var(--accent); color: #000; border: none; border-radius: 10px;
+    padding: 10px 22px; font-size: 14px; font-weight: 700; font-family: 'Syne', sans-serif;
+    cursor: pointer; transition: opacity 0.2s;
+  }
+  .btn-modal-create:hover { opacity: 0.9; }
+
+  /* ── PROJECT SCREEN ── */
+  .project-layout { display: grid; grid-template-columns: 360px 1fr; gap: 24px; align-items: start; }
+
+  .panel {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 18px;
+    padding: 24px; position: sticky; top: 90px;
+  }
+  .field { margin-bottom: 18px; }
+  .field-label {
+    display: block; font-size: 10px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--muted); margin-bottom: 7px; font-family: 'Syne', sans-serif;
+  }
+  textarea, input[type=text] {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text); font-family: 'DM Sans', sans-serif;
+    font-size: 13.5px; padding: 11px 13px; resize: vertical; outline: none;
+    line-height: 1.6; transition: border-color 0.2s;
+  }
+  textarea:focus, input[type=text]:focus { border-color: var(--accent); }
+
+  .upload-zone {
+    border: 2px dashed var(--border); border-radius: 12px; padding: 26px 16px;
+    text-align: center; cursor: pointer; transition: all 0.2s; background: var(--surface2);
+    user-select: none;
+  }
+  .upload-zone:hover, .upload-zone.drag { border-color: var(--accent); background: #141a07; }
+  .upload-icon { font-size: 30px; margin-bottom: 8px; }
+  .upload-hint { font-size: 13px; color: var(--muted); }
+  .upload-hint span { color: var(--accent); }
+  .upload-count { font-size: 11px; color: #444; margin-top: 4px; }
+
+  .files-list { margin-top: 10px; }
+  .file-chip {
+    display: flex; align-items: center; gap: 8px; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px;
+    margin-bottom: 6px; font-size: 12.5px; transition: border-color 0.15s;
+  }
+  .file-chip:hover { border-color: #333; }
+  .file-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-remove {
+    background: none; border: none; color: #444; cursor: pointer;
+    font-size: 17px; line-height: 1; padding: 0 2px; transition: color 0.15s;
+  }
+  .file-remove:hover { color: var(--red); }
+
+  .btn-analyze {
+    width: 100%; background: var(--accent); color: #000; border: none; border-radius: 11px;
+    padding: 14px; font-size: 14.5px; font-weight: 700; font-family: 'Syne', sans-serif;
+    cursor: pointer; margin-top: 14px; letter-spacing: -0.2px; transition: opacity 0.2s, transform 0.1s;
+  }
+  .btn-analyze:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+  .btn-analyze:active:not(:disabled) { transform: translateY(0); }
+  .btn-analyze:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-export {
+    width: 100%; background: none; color: var(--muted); border: 1px solid var(--border);
+    border-radius: 11px; padding: 11px; font-size: 13px; font-weight: 500;
+    font-family: 'DM Sans', sans-serif; cursor: pointer; margin-top: 8px;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-export:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .btn-export:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .error-msg { color: var(--red); font-size: 12.5px; margin-top: 8px; }
+  .progress-msg { font-size: 12px; color: var(--muted); margin-top: 8px; text-align: center; min-height: 18px; }
+
+  /* RESULTS */
+  .results-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; justify-content: space-between; }
+  .results-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
+  .results-sub { font-size: 12px; color: var(--muted); }
+
+  /* FILTER BAR */
+  .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; }
+  .filter-btn {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 20px;
+    color: var(--muted); font-size: 12px; padding: 5px 14px; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; transition: all 0.15s;
+  }
+  .filter-btn:hover { border-color: #444; color: var(--text); }
+  .filter-btn.active { background: var(--surface); border-color: var(--accent); color: var(--accent); }
+
+  /* CANDIDATE CARD */
+  .candidate-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 18px;
+    margin-bottom: 16px; overflow: hidden; transition: border-color 0.2s;
+  }
+  .candidate-card:hover { border-color: #2e2e2e; }
+  .candidate-header {
+    display: flex; align-items: center; gap: 14px; padding: 20px 24px;
+    cursor: pointer; user-select: none;
+  }
+  .cand-rank {
+    width: 34px; height: 34px; background: var(--surface2); border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700;
+    color: var(--accent); flex-shrink: 0;
+  }
+  .cand-info { flex: 1; min-width: 0; }
+  .cand-name { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
+  .cand-role { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .score-wrap { display: flex; align-items: center; gap: 12px; }
+  .score-badge {
+    display: inline-flex; align-items: center; border-radius: 20px; padding: 4px 13px;
+    font-size: 13px; font-weight: 700; font-family: 'Syne', sans-serif; white-space: nowrap;
+  }
+  .score-badge.high { background: #0a200a; color: var(--green); border: 1px solid #1a3a1a; }
+  .score-badge.mid { background: #1e1a00; color: var(--accent); border: 1px solid #3a3000; }
+  .score-badge.low { background: #200a0a; color: var(--red); border: 1px solid #3a1a1a; }
+  .score-bar-wrap { width: 60px; height: 4px; background: #222; border-radius: 2px; overflow: hidden; }
+  .score-bar-fill { height: 100%; border-radius: 2px; background: var(--accent); transition: width 0.8s ease; }
+  .chevron { color: var(--muted); font-size: 12px; flex-shrink: 0; transition: transform 0.2s; }
+  .chevron.open { transform: rotate(180deg); }
+
+  .candidate-body { padding: 0 24px 24px; display: none; }
+  .candidate-body.open { display: block; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .inner-card { background: var(--surface2); border-radius: 12px; padding: 16px; }
+  .inner-title {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.1em; font-family: 'Syne', sans-serif; margin-bottom: 10px;
+  }
+  .bullet-item { display: flex; gap: 8px; margin-bottom: 5px; font-size: 13px; color: #C0C0C0; line-height: 1.6; }
+  .bullet-dot { width: 5px; height: 5px; border-radius: 50%; margin-top: 7px; flex-shrink: 0; }
+
+  .company-card {
+    background: var(--surface2); border-radius: 10px; padding: 14px; margin-bottom: 8px;
+    font-size: 13px; line-height: 1.7; color: #B0B0B0;
+  }
+  .company-name-row {
+    font-family: 'Syne', sans-serif; font-weight: 700; color: var(--text); font-size: 14px;
+    margin-bottom: 4px; display: flex; align-items: baseline; gap: 8px;
+  }
+  .company-period { font-size: 11px; color: var(--muted); font-weight: 400; font-family: 'DM Sans', sans-serif; }
+
+  .summary-box {
+    margin-top: 14px; padding: 14px 16px; background: var(--surface2);
+    border-left: 3px solid var(--accent); border-radius: 0 10px 10px 0;
+    font-size: 13px; color: #C0C0C0; line-height: 1.7;
+  }
+  .summary-box strong { color: var(--text); }
+
+  /* STATUS TAGS */
+  .status-row {
+    display: flex; gap: 8px; margin-top: 16px; padding-top: 16px;
+    border-top: 1px solid var(--border); align-items: center; flex-wrap: wrap;
+  }
+  .status-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-right: 4px; }
+  .status-tag {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 20px;
+    color: var(--muted); font-size: 12px; padding: 5px 14px; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; transition: all 0.15s;
+  }
+  .status-tag:hover { border-color: #444; color: var(--text); }
+  .status-tag.invited { background: #0a200a; color: var(--green); border-color: #1a3a1a; }
+  .status-tag.reserve { background: #1e1a00; color: var(--accent); border-color: #3a3000; }
+  .status-tag.rejected { background: #200a0a; color: var(--red); border-color: #3a1a1a; }
+
+  /* INTERVIEW QUESTIONS */
+  .interview-section {
+    margin-top: 14px; background: var(--surface2); border-radius: 12px; padding: 16px;
+  }
+  .interview-title {
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+    font-family: 'Syne', sans-serif; color: var(--purple); margin-bottom: 10px;
+  }
+  .interview-q-item {
+    display: flex; gap: 8px; margin-bottom: 8px; font-size: 13px; color: #C0C0C0; line-height: 1.6;
+  }
+  .interview-q-num {
+    font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700;
+    color: var(--purple); min-width: 18px; margin-top: 1px;
+  }
+
+  /* RECRUITER NOTES */
+  .notes-section { margin-top: 14px; }
+  .notes-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+    font-family: 'Syne', sans-serif; color: var(--muted); margin-bottom: 8px; display: block;
+  }
+  .notes-textarea {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text); font-family: 'DM Sans', sans-serif;
+    font-size: 13px; padding: 11px 13px; resize: vertical; outline: none;
+    line-height: 1.6; transition: border-color 0.2s; min-height: 70px;
+  }
+  .notes-textarea:focus { border-color: var(--accent); }
+  .notes-textarea::placeholder { color: #444; }
+
+  /* COMPARE TABLE */
+  .compare-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 18px;
+    padding: 24px; margin-top: 16px; overflow-x: auto;
+  }
+  .compare-title {
+    font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 18px;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 600px; }
+  th {
+    text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border);
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted);
+    font-family: 'Syne', sans-serif; font-weight: 600;
+  }
+  td { padding: 12px 12px; border-bottom: 1px solid #1a1a1a; vertical-align: top; color: #B0B0B0; line-height: 1.5; }
+  tr:last-child td { border-bottom: none; }
+  .verdict { font-weight: 600; font-family: 'Syne', sans-serif; font-size: 12px; }
+  .verdict.rec { color: var(--green); }
+  .verdict.con { color: var(--accent); }
+  .verdict.no { color: var(--red); }
+
+  /* EMPTY STATE */
+  .empty-state {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 18px;
+    padding: 70px 24px; text-align: center;
+  }
+  .empty-icon { font-size: 52px; margin-bottom: 18px; }
+  .empty-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 10px; letter-spacing: -0.5px; }
+  .empty-desc { color: var(--muted); font-size: 13.5px; line-height: 1.8; }
+
+  /* SPINNER */
+  .spinner {
+    display: inline-block; width: 17px; height: 17px; border: 2px solid #333;
+    border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite;
+    vertical-align: middle; margin-right: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* SKELETON */
+  .skeleton-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 18px;
+    padding: 20px 24px; margin-bottom: 16px;
+  }
+  .skel { background: linear-gradient(90deg, #1a1a1a 25%, #222 50%, #1a1a1a 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 6px; }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 3px; }
+
+  @media (max-width: 860px) {
+    header { padding: 16px 20px; flex-wrap: wrap; }
+    .api-row { width: 100%; }
+    .api-input { width: 100%; flex: 1; }
+    .main { padding: 20px 16px; }
+    .project-layout { grid-template-columns: 1fr; }
+    .panel { position: static; }
+    .two-col { grid-template-columns: 1fr; }
+    .projects-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-row">
+    <div class="logo-icon">🎯</div>
+    <div>
+      <div class="logo-text">CV Analyzer</div>
+      <div class="logo-sub">AI-Powered Candidate Screening</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div id="breadcrumbArea" style="display:none" class="breadcrumb">
+      <button class="breadcrumb-back" onclick="goToProjects()">← Vacancies</button>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-current" id="breadcrumbTitle"></span>
+    </div>
+    <div class="api-row">
+      <div class="api-label">API Key</div>
+      <div class="api-status" id="apiStatus"></div>
+      <input class="api-input" type="password" id="apiKey" placeholder="sk-ant-..." oninput="onApiKeyInput()" />
+    </div>
+  </div>
+</header>
+
+<!-- ══ PROJECTS SCREEN ══ -->
+<div class="main" id="projectsScreen">
+  <div class="projects-header">
+    <div class="projects-title">Vacancies</div>
+    <button class="btn-new-project" onclick="openNewProjectModal()">+ New Vacancy</button>
+  </div>
+  <div id="projectsGrid"></div>
+</div>
+
+<!-- ══ PROJECT SCREEN ══ -->
+<div class="main" id="projectScreen" style="display:none">
+  <div class="project-layout">
+
+    <!-- LEFT PANEL -->
+    <div class="panel">
+      <div class="field">
+        <span class="field-label">Job Description</span>
+        <textarea id="jobDesc" rows="7" placeholder="Paste the job description here — requirements, responsibilities, tech stack, team context..." oninput="saveCurrentProjectMeta()"></textarea>
+      </div>
+      <div class="field">
+        <span class="field-label">Expectations & Context</span>
+        <textarea id="expectations" rows="4" placeholder="What matters most? e.g. must have B2B SaaS experience, needs to work autonomously, Senior level only..." oninput="saveCurrentProjectMeta()"></textarea>
+      </div>
+      <div class="field">
+        <span class="field-label">Candidate CVs (PDF · up to 6 files)</span>
+        <div class="upload-zone" id="uploadZone"
+          onclick="document.getElementById('fileInput').click()"
+          ondragover="onDragOver(event)"
+          ondragleave="onDragLeave()"
+          ondrop="onDrop(event)">
+          <div class="upload-icon">📄</div>
+          <div class="upload-hint">Drop PDFs here or <span>browse files</span></div>
+          <div class="upload-count" id="uploadCount">No files selected</div>
+        </div>
+        <input type="file" id="fileInput" accept="application/pdf" multiple style="display:none" onchange="onFileInput(event)" />
+        <div class="files-list" id="filesList"></div>
+      </div>
+      <div id="errorMsg" class="error-msg"></div>
+      <button class="btn-analyze" id="analyzeBtn" onclick="handleAnalyze()" disabled>Analyze Candidates</button>
+      <button class="btn-export" id="exportBtn" onclick="exportCSV()" disabled>⬇ Export CSV</button>
+      <div class="progress-msg" id="progressMsg"></div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div>
+      <div id="resultsHeader" style="display:none" class="results-header">
+        <div style="display:flex;align-items:baseline;gap:10px">
+          <span class="results-title" id="resultsTitle"></span>
+          <span class="results-sub" id="resultsSub"></span>
+        </div>
+        <div class="filter-bar" id="filterBar">
+          <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+          <button class="filter-btn" onclick="setFilter('Recommended',this)">Recommended</button>
+          <button class="filter-btn" onclick="setFilter('Consider',this)">Consider</button>
+          <button class="filter-btn" onclick="setFilter('Not Recommended',this)">Not Recommended</button>
+        </div>
+      </div>
+      <div id="resultsArea">
+        <div class="empty-state">
+          <div class="empty-icon">🔍</div>
+          <div class="empty-title">Ready to Screen</div>
+          <div class="empty-desc">Upload PDF CVs and hit <strong>Analyze</strong>.<br>Each candidate is scored, compared,<br>and ranked automatically.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ NEW PROJECT MODAL ══ -->
+<div class="modal-overlay" id="newProjectModal">
+  <div class="modal">
+    <div class="modal-title">New Vacancy</div>
+    <div class="modal-field">
+      <label class="modal-label">Vacancy Title</label>
+      <input class="modal-input" type="text" id="modalTitle" placeholder="e.g. Senior Frontend Developer" />
+    </div>
+    <div class="modal-field">
+      <label class="modal-label">Job Description <span style="color:#444;font-size:10px">(optional, can edit later)</span></label>
+      <textarea class="modal-textarea" id="modalJobDesc" rows="5" placeholder="Paste job description..."></textarea>
+    </div>
+    <div class="modal-field">
+      <label class="modal-label">Expectations <span style="color:#444;font-size:10px">(optional)</span></label>
+      <textarea class="modal-textarea" id="modalExpectations" rows="3" placeholder="Key requirements..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-modal-create" onclick="createProject()">Create Vacancy</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════
+let projects = [];
+let currentProjectId = null;
+let uploadedFiles = [];
+let activeFilter = 'all';
+
+// ══════════════════════════════════════════════
+//  STORAGE
+// ══════════════════════════════════════════════
+function saveProjects() {
+  localStorage.setItem('cva_projects', JSON.stringify(projects));
+}
+function loadProjects() {
+  try { projects = JSON.parse(localStorage.getItem('cva_projects') || '[]'); } catch { projects = []; }
+}
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+
+// ══════════════════════════════════════════════
+//  API KEY
+// ══════════════════════════════════════════════
+function onApiKeyInput() {
+  const key = document.getElementById('apiKey').value.trim();
+  const status = document.getElementById('apiStatus');
+  status.className = 'api-status' + (key.startsWith('sk-ant-') ? ' ok' : '');
+  localStorage.setItem('cva_key', key);
+  updateAnalyzeBtn();
+}
+
+// ══════════════════════════════════════════════
+//  PROJECTS SCREEN
+// ══════════════════════════════════════════════
+function renderProjects() {
+  const grid = document.getElementById('projectsGrid');
+  if (projects.length === 0) {
+    grid.innerHTML = `<div class="projects-empty">
+      <div class="projects-empty-icon">📂</div>
+      <div class="projects-empty-title">No vacancies yet</div>
+      <div class="projects-empty-desc">Create your first vacancy to start screening candidates.</div>
+      <button class="btn-new-project" onclick="openNewProjectModal()">+ New Vacancy</button>
+    </div>`;
+    return;
+  }
+  let html = '<div class="projects-grid">';
+  projects.forEach(p => {
+    const count = (p.candidates || []).length;
+    const date = new Date(p.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    html += `<div class="project-card" onclick="openProject('${p.id}')">
+      <div class="project-card-icon">📁</div>
+      <div class="project-card-title">${escHtml(p.title)}</div>
+      <div class="project-card-meta">
+        <div class="project-meta-row">
+          <span class="project-meta-key">Candidates</span>
+          <span class="project-meta-val">${count}</span>
+        </div>
+        <div class="project-meta-row">
+          <span class="project-meta-key">Created</span>
+          <span class="project-meta-val">${date}</span>
+        </div>
+      </div>
+      <div class="project-card-actions" onclick="event.stopPropagation()">
+        <button class="btn-delete-proj" onclick="deleteProject('${p.id}')">Delete</button>
+      </div>
+    </div>`;
+  });
+  // add new card
+  html += `<div class="project-card-new" onclick="openNewProjectModal()">
+    <div class="project-card-new-icon">+</div>
+    <div class="project-card-new-text">New Vacancy</div>
+  </div>`;
+  html += '</div>';
+  grid.innerHTML = html;
+}
+
+function openNewProjectModal() {
+  document.getElementById('modalTitle').value = '';
+  document.getElementById('modalJobDesc').value = '';
+  document.getElementById('modalExpectations').value = '';
+  document.getElementById('newProjectModal').classList.add('open');
+  setTimeout(() => document.getElementById('modalTitle').focus(), 100);
+}
+function closeModal() {
+  document.getElementById('newProjectModal').classList.remove('open');
+}
+document.getElementById('newProjectModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+  if (e.key === 'Enter' && document.getElementById('newProjectModal').classList.contains('open')) {
+    if (e.target.tagName !== 'TEXTAREA') createProject();
+  }
+});
+
+function createProject() {
+  const title = document.getElementById('modalTitle').value.trim();
+  if (!title) { document.getElementById('modalTitle').focus(); return; }
+  const proj = {
+    id: genId(),
+    title,
+    jobDesc: document.getElementById('modalJobDesc').value.trim(),
+    expectations: document.getElementById('modalExpectations').value.trim(),
+    createdAt: Date.now(),
+    candidates: []
+  };
+  projects.unshift(proj);
+  saveProjects();
+  closeModal();
+  openProject(proj.id);
+}
+
+function deleteProject(id) {
+  if (!confirm('Delete this vacancy and all its candidates?')) return;
+  projects = projects.filter(p => p.id !== id);
+  saveProjects();
+  renderProjects();
+}
+
+// ══════════════════════════════════════════════
+//  PROJECT SCREEN
+// ══════════════════════════════════════════════
+function openProject(id) {
+  currentProjectId = id;
+  const proj = projects.find(p => p.id === id);
+  if (!proj) return;
+
+  // switch screens
+  document.getElementById('projectsScreen').style.display = 'none';
+  document.getElementById('projectScreen').style.display = 'block';
+  document.getElementById('breadcrumbArea').style.display = 'flex';
+  document.getElementById('breadcrumbTitle').textContent = proj.title;
+
+  // fill panel
+  document.getElementById('jobDesc').value = proj.jobDesc || '';
+  document.getElementById('expectations').value = proj.expectations || '';
+
+  // reset upload
+  uploadedFiles = [];
+  renderFiles();
+  document.getElementById('errorMsg').textContent = '';
+  document.getElementById('progressMsg').textContent = '';
+
+  // reset filter
+  activeFilter = 'all';
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.filter-btn').classList.add('active');
+
+  updateAnalyzeBtn();
+  renderCandidates(proj.candidates || [], false);
+  updateExportBtn();
+}
+
+function goToProjects() {
+  currentProjectId = null;
+  document.getElementById('projectsScreen').style.display = 'block';
+  document.getElementById('projectScreen').style.display = 'none';
+  document.getElementById('breadcrumbArea').style.display = 'none';
+  renderProjects();
+}
+
+function currentProject() {
+  return projects.find(p => p.id === currentProjectId);
+}
+
+function saveCurrentProjectMeta() {
+  const proj = currentProject();
+  if (!proj) return;
+  proj.jobDesc = document.getElementById('jobDesc').value.trim();
+  proj.expectations = document.getElementById('expectations').value.trim();
+  saveProjects();
+}
+
+// ══════════════════════════════════════════════
+//  FILES
+// ══════════════════════════════════════════════
+function onDragOver(e) { e.preventDefault(); document.getElementById('uploadZone').classList.add('drag'); }
+function onDragLeave() { document.getElementById('uploadZone').classList.remove('drag'); }
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('drag');
+  addFiles(Array.from(e.dataTransfer.files).filter(f => f.type === 'application/pdf'));
+}
+function onFileInput(e) { addFiles(Array.from(e.target.files)); e.target.value = ''; }
+function addFiles(newFiles) {
+  uploadedFiles = [...uploadedFiles, ...newFiles].slice(0, 6);
+  renderFiles();
+}
+function removeFile(i) { uploadedFiles.splice(i, 1); renderFiles(); }
+function renderFiles() {
+  const count = uploadedFiles.length;
+  document.getElementById('uploadCount').textContent = count === 0 ? 'No files selected' : `${count} file${count > 1 ? 's' : ''} selected`;
+  document.getElementById('filesList').innerHTML = uploadedFiles.map((f, i) => `
+    <div class="file-chip">
+      <span>📎</span>
+      <span class="file-name">${escHtml(f.name)}</span>
+      <button class="file-remove" onclick="removeFile(${i})">×</button>
+    </div>`).join('');
+  updateAnalyzeBtn();
+}
+function updateAnalyzeBtn() {
+  const key = document.getElementById('apiKey').value.trim();
+  const hasJob = document.getElementById('jobDesc').value.trim().length > 0;
+  document.getElementById('analyzeBtn').disabled = !(key && uploadedFiles.length > 0 && hasJob);
+}
+function updateExportBtn() {
+  const proj = currentProject();
+  const btn = document.getElementById('exportBtn');
+  if (btn) btn.disabled = !proj || (proj.candidates || []).length === 0;
+}
+document.getElementById('jobDesc').addEventListener('input', updateAnalyzeBtn);
+
+// ══════════════════════════════════════════════
+//  ANALYZE
+// ══════════════════════════════════════════════
+function readFileAsBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = () => rej(new Error('Read failed'));
+    r.readAsDataURL(file);
+  });
+}
+
+async function analyzeOne(file, apiKey, jobDesc, expectations) {
+  const base64 = await readFileAsBase64(file);
+  const prompt = `You are an expert recruiter and talent advisor. Analyze this candidate's CV against the job description below.
+
+JOB DESCRIPTION:
+${jobDesc}
+
+HIRING CONTEXT & EXPECTATIONS:
+${expectations || 'Not provided'}
+
+The CV is attached as a PDF.
+
+Return ONLY a valid JSON object with NO markdown fences, no preamble:
+{
+  "name": "Full name from CV",
+  "currentRole": "Current or most recent job title",
+  "matchScore": integer 0-100,
+  "strengths": ["strength 1", "strength 2", "strength 3"],
+  "weaknesses": ["weakness 1", "weakness 2"],
+  "risks": ["risk 1", "risk 2"],
+  "companies": [
+    {
+      "name": "Most recent company name",
+      "period": "employment period",
+      "analysis": "2-3 sentences: company type/size, candidate's role and achievements, reason for leaving if mentioned"
+    },
+    {
+      "name": "Second most recent company",
+      "period": "employment period",
+      "analysis": "2-3 sentences analysis"
+    }
+  ],
+  "interviewQuestions": [
+    "Targeted interview question 1 based on their specific CV and gaps",
+    "Targeted interview question 2",
+    "Targeted interview question 3"
+  ],
+  "summary": "2-3 sentence overall verdict on fit",
+  "verdict": "Recommended" or "Consider" or "Not Recommended"
+}`;
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-opus-4-6',
+      max_tokens: 1800,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64 } },
+          { type: 'text', text: prompt }
+        ]
+      }]
+    })
+  });
+
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  const text = (data.content || []).map(i => i.text || '').join('');
+  const clean = text.replace(/```json|```/g, '').trim();
+  return JSON.parse(clean);
+}
+
+async function handleAnalyze() {
+  const apiKey = document.getElementById('apiKey').value.trim();
+  const jobDesc = document.getElementById('jobDesc').value.trim();
+  const expectations = document.getElementById('expectations').value.trim();
+  const proj = currentProject();
+  if (!proj) return;
+
+  document.getElementById('errorMsg').textContent = '';
+  document.getElementById('analyzeBtn').disabled = true;
+  document.getElementById('progressMsg').textContent = '';
+
+  // save meta first
+  proj.jobDesc = jobDesc;
+  proj.expectations = expectations;
+
+  for (let i = 0; i < uploadedFiles.length; i++) {
+    setProgress(`Analyzing ${i + 1} of ${uploadedFiles.length}: ${uploadedFiles[i].name}…`);
+    if (i > 0) await new Promise(r => setTimeout(r, 5000));
+    try {
+      const result = await analyzeOne(uploadedFiles[i], apiKey, jobDesc, expectations);
+      proj.candidates.push({
+        id: genId(),
+        fileName: uploadedFiles[i].name,
+        analyzedAt: Date.now(),
+        status: null,
+        notes: '',
+        result
+      });
+    } catch (e) {
+      proj.candidates.push({
+        id: genId(),
+        fileName: uploadedFiles[i].name,
+        analyzedAt: Date.now(),
+        status: null,
+        notes: '',
+        result: {
+          name: uploadedFiles[i].name,
+          currentRole: '',
+          matchScore: 0,
+          strengths: [],
+          weaknesses: [],
+          risks: ['Could not parse this PDF — try a text-based PDF'],
+          companies: [],
+          interviewQuestions: [],
+          summary: 'Analysis failed.',
+          verdict: 'Not Recommended'
+        }
+      });
+    }
+    saveProjects();
+    renderCandidates(proj.candidates, i < uploadedFiles.length - 1);
+    updateExportBtn();
+  }
+
+  setProgress('');
+  uploadedFiles = [];
+  renderFiles();
+  document.getElementById('analyzeBtn').disabled = true;
+  updateAnalyzeBtn();
+}
+
+function setProgress(msg) {
+  document.getElementById('progressMsg').innerHTML = msg
+    ? `<span class="spinner"></span>${escHtml(msg)}` : '';
+}
+
+// ══════════════════════════════════════════════
+//  FILTER
+// ══════════════════════════════════════════════
+function setFilter(filter, btn) {
+  activeFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const proj = currentProject();
+  if (proj) renderCandidates(proj.candidates || [], false);
+}
+
+// ══════════════════════════════════════════════
+//  RENDER CANDIDATES
+// ══════════════════════════════════════════════
+function scoreClass(s) { return s >= 75 ? 'high' : s >= 50 ? 'mid' : 'low'; }
+
+function renderCandidates(candidates, loading) {
+  const area = document.getElementById('resultsArea');
+  const header = document.getElementById('resultsHeader');
+
+  if (candidates.length === 0 && loading) {
+    header.style.display = 'none';
+    area.innerHTML = `<div class="skeleton-card">
+      <div style="display:flex;gap:14px;align-items:center">
+        <div class="skel" style="width:34px;height:34px;border-radius:9px"></div>
+        <div style="flex:1">
+          <div class="skel" style="height:16px;width:55%;margin-bottom:8px"></div>
+          <div class="skel" style="height:11px;width:30%"></div>
+        </div>
+        <div class="skel" style="height:28px;width:100px;border-radius:20px"></div>
+      </div>
+    </div>`;
+    return;
+  }
+
+  if (candidates.length === 0) {
+    header.style.display = 'none';
+    area.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">🔍</div>
+      <div class="empty-title">Ready to Screen</div>
+      <div class="empty-desc">Upload PDF CVs and hit <strong>Analyze</strong>.<br>Each candidate is scored, compared,<br>and ranked automatically.</div>
+    </div>`;
+    return;
+  }
+
+  header.style.display = 'flex';
+  document.getElementById('resultsTitle').textContent = `${candidates.length} Candidate${candidates.length !== 1 ? 's' : ''} Analyzed`;
+  document.getElementById('resultsSub').textContent = loading ? '· analyzing…' : '';
+
+  // filter
+  let filtered = activeFilter === 'all' ? candidates : candidates.filter(c => c.result && c.result.verdict === activeFilter);
+  // sort by score desc
+  const sorted = [...filtered].sort((a, b) => ((b.result && b.result.matchScore) || 0) - ((a.result && a.result.matchScore) || 0));
+
+  let html = '';
+  sorted.forEach((cand, i) => {
+    const r = cand.result || {};
+    const score = r.matchScore || 0;
+    const qs = r.interviewQuestions || [];
+    html += `
+    <div class="candidate-card" id="card-${cand.id}">
+      <div class="candidate-header" onclick="toggleCard('${cand.id}')">
+        <div class="cand-rank">#${i+1}</div>
+        <div class="cand-info">
+          <div class="cand-name">${escHtml(r.name || cand.fileName || `Candidate ${i+1}`)}</div>
+          <div class="cand-role">${escHtml(r.currentRole || '')}</div>
+        </div>
+        <div class="score-wrap">
+          <span class="score-badge ${scoreClass(score)}">${score}% match</span>
+          <div class="score-bar-wrap"><div class="score-bar-fill" style="width:${score}%"></div></div>
+        </div>
+        <span class="chevron open" id="chev-${cand.id}">▲</span>
+      </div>
+      <div class="candidate-body open" id="body-${cand.id}">
+        <div class="two-col">
+          <div class="inner-card">
+            <div class="inner-title" style="color:var(--green)">✦ Strengths</div>
+            ${bulletList(r.strengths, 'var(--green)')}
+          </div>
+          <div class="inner-card">
+            <div class="inner-title" style="color:var(--red)">✦ Weaknesses</div>
+            ${bulletList(r.weaknesses, 'var(--red)')}
+          </div>
+        </div>
+        <div class="inner-card" style="margin-bottom:14px">
+          <div class="inner-title" style="color:var(--orange)">⚠ Risks</div>
+          ${bulletList(r.risks, 'var(--orange)')}
+        </div>
+        <div style="margin-bottom:14px">
+          <div class="inner-title" style="color:var(--purple);margin-bottom:10px">🏢 Last Two Companies</div>
+          ${(r.companies || []).map(c => `
+            <div class="company-card">
+              <div class="company-name-row">${escHtml(c.name || '')} <span class="company-period">${escHtml(c.period || '')}</span></div>
+              ${escHtml(c.analysis || '')}
+            </div>`).join('')}
+        </div>
+        ${qs.length > 0 ? `
+        <div class="interview-section">
+          <div class="interview-title">💬 Interview Questions</div>
+          ${qs.map((q, qi) => `
+            <div class="interview-q-item">
+              <span class="interview-q-num">${qi+1}.</span>
+              <span>${escHtml(q)}</span>
+            </div>`).join('')}
+        </div>` : ''}
+        ${r.summary ? `<div class="summary-box"><strong>Verdict: </strong>${escHtml(r.summary)}</div>` : ''}
+
+        <!-- STATUS TAGS -->
+        <div class="status-row">
+          <span class="status-label">Status</span>
+          <button class="status-tag ${cand.status === 'invited' ? 'invited' : ''}" onclick="setStatus('${cand.id}','invited')">✓ Invite</button>
+          <button class="status-tag ${cand.status === 'reserve' ? 'reserve' : ''}" onclick="setStatus('${cand.id}','reserve')">⊙ Reserve</button>
+          <button class="status-tag ${cand.status === 'rejected' ? 'rejected' : ''}" onclick="setStatus('${cand.id}','rejected')">✕ Reject</button>
+        </div>
+
+        <!-- NOTES -->
+        <div class="notes-section" style="margin-top:14px">
+          <span class="notes-label">Recruiter Notes</span>
+          <textarea class="notes-textarea" placeholder="Add your notes about this candidate..."
+            oninput="saveNote('${cand.id}', this.value)">${escHtml(cand.notes || '')}</textarea>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  // comparison table
+  if (candidates.length >= 2 && !loading) {
+    const allSorted = [...candidates].sort((a, b) => ((b.result && b.result.matchScore) || 0) - ((a.result && a.result.matchScore) || 0));
+    const medals = ['🥇','🥈','🥉'];
+    html += `<div class="compare-card">
+      <div class="compare-title">📊 Comparison Rankings</div>
+      <table>
+        <thead><tr>
+          <th>Rank</th><th>Candidate</th><th>Score</th><th>Top Strengths</th><th>Key Risk</th><th>Status</th><th>Verdict</th>
+        </tr></thead>
+        <tbody>
+          ${allSorted.map((cand, i) => {
+            const r = cand.result || {};
+            const statusMap = { invited: '✓ Invited', reserve: '⊙ Reserve', rejected: '✕ Rejected' };
+            return `<tr>
+              <td style="font-size:18px">${medals[i] || '#'+(i+1)}</td>
+              <td><strong style="color:var(--text);font-family:'Syne',sans-serif">${escHtml(r.name||'')}</strong><br><span style="font-size:11px;color:var(--muted)">${escHtml(r.currentRole||'')}</span></td>
+              <td><span class="score-badge ${scoreClass(r.matchScore||0)}">${r.matchScore||0}%</span></td>
+              <td>${(r.strengths||[]).slice(0,2).map(s=>escHtml(s)).join('<br>')}</td>
+              <td>${escHtml((r.risks||[])[0]||'—')}</td>
+              <td style="font-size:12px;color:var(--muted)">${escHtml(statusMap[cand.status] || '—')}</td>
+              <td><span class="verdict ${r.verdict==='Recommended'?'rec':r.verdict==='Consider'?'con':'no'}">${escHtml(r.verdict||'—')}</span></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+  }
+
+  area.innerHTML = html;
+}
+
+function toggleCard(id) {
+  const body = document.getElementById('body-' + id);
+  const chev = document.getElementById('chev-' + id);
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  chev.classList.toggle('open', !isOpen);
+}
+
+// ══════════════════════════════════════════════
+//  STATUS & NOTES
+// ══════════════════════════════════════════════
+function setStatus(candId, status) {
+  const proj = currentProject();
+  if (!proj) return;
+  const cand = proj.candidates.find(c => c.id === candId);
+  if (!cand) return;
+  cand.status = cand.status === status ? null : status; // toggle off if same
+  saveProjects();
+  renderCandidates(proj.candidates, false);
+}
+
+let noteDebounce = {};
+function saveNote(candId, value) {
+  clearTimeout(noteDebounce[candId]);
+  noteDebounce[candId] = setTimeout(() => {
+    const proj = currentProject();
+    if (!proj) return;
+    const cand = proj.candidates.find(c => c.id === candId);
+    if (!cand) return;
+    cand.notes = value;
+    saveProjects();
+  }, 400);
+}
+
+// ══════════════════════════════════════════════
+//  EXPORT CSV
+// ══════════════════════════════════════════════
+function exportCSV() {
+  const proj = currentProject();
+  if (!proj || !proj.candidates.length) return;
+
+  const sorted = [...proj.candidates].sort((a, b) =>
+    ((b.result && b.result.matchScore) || 0) - ((a.result && a.result.matchScore) || 0));
+
+  const statusMap = { invited: 'Invited', reserve: 'Reserve', rejected: 'Rejected' };
+  const cols = ['Rank','Name','Current Role','Match Score','Verdict','Status','Strengths','Weaknesses','Risks','Companies','Interview Questions','Summary','Notes','Analyzed At'];
+
+  const rows = sorted.map((cand, i) => {
+    const r = cand.result || {};
+    const date = new Date(cand.analyzedAt).toLocaleDateString('en-GB');
+    const companies = (r.companies || []).map(c => `${c.name} (${c.period}): ${c.analysis}`).join(' | ');
+    return [
+      i + 1,
+      r.name || '',
+      r.currentRole || '',
+      (r.matchScore || 0) + '%',
+      r.verdict || '',
+      statusMap[cand.status] || '—',
+      (r.strengths || []).join('; '),
+      (r.weaknesses || []).join('; '),
+      (r.risks || []).join('; '),
+      companies,
+      (r.interviewQuestions || []).join('; '),
+      r.summary || '',
+      cand.notes || '',
+      date
+    ].map(v => `"${String(v).replace(/"/g, '""')}"`);
+  });
+
+  const csv = '\uFEFF' + [cols.map(c => `"${c}"`), ...rows].map(r => r.join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const safeName = proj.title.replace(/[^a-z0-9]/gi, '_').substring(0, 40);
+  const dateStr = new Date().toISOString().split('T')[0];
+  a.href = url; a.download = `CV_Report_${safeName}_${dateStr}.csv`;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ══════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════
+function bulletList(items, color) {
+  if (!items || items.length === 0) return '<div style="color:#444;font-size:13px">—</div>';
+  return items.map(item => `
+    <div class="bullet-item">
+      <div class="bullet-dot" style="background:${color}"></div>
+      <span>${escHtml(item)}</span>
+    </div>`).join('');
+}
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+window.onload = () => {
+  const savedKey = localStorage.getItem('cva_key');
+  if (savedKey) { document.getElementById('apiKey').value = savedKey; onApiKeyInput(); }
+  loadProjects();
+  renderProjects();
+};
+</script>
+</body>
+</html>
